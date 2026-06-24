@@ -1,0 +1,1 @@
+<?php namespace App\Filament\Resources\SongNumberResource\Pages; use App\Filament\Resources\SongNumberResource; use Filament\Actions; use Filament\Resources\Pages\EditRecord; class EditSongNumber extends EditRecord { protected static string $resource = SongNumberResource::class; protected function getHeaderActions(): array { return [Actions\DeleteAction::make()]; } }

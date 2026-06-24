@@ -1,0 +1,1 @@
+<?php namespace App\Filament\Resources\SongNumberResource\Pages; use App\Filament\Resources\SongNumberResource; use Filament\Actions; use Filament\Resources\Pages\CreateRecord; class CreateSongNumber extends CreateRecord { protected static string $resource = SongNumberResource::class; }

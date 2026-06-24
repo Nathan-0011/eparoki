@@ -1,0 +1,1 @@
+<?php namespace App\Filament\Resources\BphMemberResource\Pages; use App\Filament\Resources\BphMemberResource; use Filament\Actions; use Filament\Resources\Pages\EditRecord; class EditBphMember extends EditRecord { protected static string $resource = BphMemberResource::class; protected function getHeaderActions(): array { return [Actions\DeleteAction::make()]; } }
