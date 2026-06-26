@@ -1,16 +1,48 @@
 <?php
+
 namespace App\Http\Controllers\Api;
+
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
-use App\Http\Resources\BannerResource;
 use App\Helpers\ApiResponse;
 use Exception;
+use Illuminate\Http\JsonResponse;
 
-class BannerController extends Controller {
-    public function index() {
+class BannerController extends Controller
+{
+    /**
+     * Mengembalikan daftar banner aktif untuk carousel aplikasi mobile.
+     */
+    public function index(): JsonResponse
+    {
         try {
-            $data = Banner::active()->orderBy("order")->get();
-            return ApiResponse::success(BannerResource::collection($data), "Data diambil", ["total" => $data->count()]);
-        } catch (Exception $e) { return ApiResponse::error($e->getMessage(), null, 500); }
+            $banners = Banner::active()->get();
+            
+            $formattedData = $banners->map(function ($banner) {
+                return [
+                    'id' => $banner->id,
+                    'title' => $banner->title,
+                    'image_url' => $banner->image_url,
+                    'order' => $banner->order,
+                    'start_date' => $banner->start_date ? $banner->start_date->toDateString() : null,
+                    'end_date' => $banner->end_date ? $banner->end_date->toDateString() : null,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data banner kegiatan',
+                'data' => $formattedData,
+                'meta' => [
+                    'total' => $banners->count(),
+                ],
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'data' => null,
+            ], 500);
+        }
     }
 }

@@ -25,8 +25,9 @@ class AdminPanelProvider extends PanelProvider
             ->id("admin")
             ->path("admin")
             ->login()
-            ->brandLogo(asset('images/logo-paroki.svg'))
-            ->brandLogoHeight('48px')
+            ->brandLogo(asset('images/logo-ekatolik.svg'))
+            ->brandLogoHeight('40px')
+            ->brandName('')
             ->globalSearch(false)
             ->topNavigation(false)
             ->sidebarCollapsibleOnDesktop(true)
@@ -37,12 +38,24 @@ class AdminPanelProvider extends PanelProvider
             ->darkMode(true)
             ->spa()
             ->navigationGroups([
-                "Liturgi & Ibadah",
-                "Data Umat",
-                "Kepemimpinan",
-                "Konten & Media",
-                "Keuangan & Intensi",
-                "Perangkat IoT",
+                \Filament\Navigation\NavigationGroup::make('Liturgi & Ibadah')
+                    ->icon('heroicon-o-book-open')
+                    ->collapsible(false),
+                \Filament\Navigation\NavigationGroup::make('Data Umat')
+                    ->icon('heroicon-o-users')
+                    ->collapsible(false),
+                \Filament\Navigation\NavigationGroup::make('Kepemimpinan')
+                    ->icon('heroicon-o-identification')
+                    ->collapsible(false),
+                \Filament\Navigation\NavigationGroup::make('Konten & Media')
+                    ->icon('heroicon-o-photo')
+                    ->collapsible(false),
+                \Filament\Navigation\NavigationGroup::make('Keuangan & Intensi')
+                    ->icon('heroicon-o-heart')
+                    ->collapsible(false),
+                \Filament\Navigation\NavigationGroup::make('IoT & Display')
+                    ->icon('heroicon-o-device-tablet')
+                    ->collapsible(false),
             ])
             ->discoverResources(in: app_path("Filament/Resources"), for: "App\\Filament\\Resources")
             ->discoverPages(in: app_path("Filament/Pages"), for: "App\\Filament\\Pages")

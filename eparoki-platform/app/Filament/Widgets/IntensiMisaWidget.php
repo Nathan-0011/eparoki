@@ -9,42 +9,42 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class IntensiMisaWidget extends BaseWidget
 {
-    protected static ?string $heading = '🙏 Intensi Misa Minggu Ini';
-
-    // Tampil di baris kedua, sebelah kanan (setengah lebar)
-    protected static ?int $sort = 3;
-    protected int | string | array $columnSpan = 'half';
+    protected int | string | array $columnSpan = 2;
+    
+    protected function getTableHeading(): string|\Illuminate\Contracts\Support\Htmlable|null
+    {
+        return '🙏 Intensi Misa Minggu Ini';
+    }
 
     public function table(Table $table): Table
     {
         return $table
             ->query(
-                // currentWeek() = is_archived = false
-                IntensiMisa::query()->currentWeek()->latest()
+                IntensiMisa::query()
+                    ->where('is_archived', false)
+                    ->orderBy('created_at', 'desc')
+                    ->limit(8)
             )
+            ->paginated(false)
             ->columns([
                 Tables\Columns\TextColumn::make('family_name')
                     ->label('Nama Keluarga')
-                    ->searchable()
                     ->weight('bold'),
-
+                    
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Nominal')
-                    ->formatStateUsing(fn ($state) => $state
-                        ? 'Rp ' . number_format($state, 0, ',', '.')
-                        : '–'
-                    )
                     ->badge()
-                    ->color('success'),
-
+                    ->color('success')
+                    ->formatStateUsing(fn ($state) => $state ? 'Rp ' . number_format($state, 0, ',', '.') : '-')
+                    ->default('-'),
+                    
                 Tables\Columns\TextColumn::make('description')
                     ->label('Keterangan')
-                    ->wrap()
-                    ->placeholder('–'),
+                    ->limit(50)
+                    ->tooltip(fn ($record) => $record->description),
             ])
-            ->emptyStateHeading('Belum Ada Intensi Misa')
-            ->emptyStateDescription('Belum ada intensi misa yang tercatat untuk minggu ini.')
-            ->emptyStateIcon('heroicon-o-heart')
-            ->paginated(5);
+            ->emptyStateHeading('Belum Ada Intensi')
+            ->emptyStateDescription('Belum ada intensi misa minggu ini.')
+            ->emptyStateIcon('heroicon-o-heart');
     }
 }

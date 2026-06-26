@@ -21,85 +21,51 @@ class KepalaKeluargaResource extends Resource
     protected static ?string $navigationLabel = 'Kepala Keluarga';
     protected static ?string $modelLabel = 'Kepala Keluarga';
     protected static ?string $pluralModelLabel = 'Daftar Kepala Keluarga';
-    protected static ?string $recordTitleAttribute = 'nama_kk';
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Section::make('Data Keluarga')
-                    ->description('Informasi utama terkait keluarga dan wilayahnya.')
+                Section::make('Data Kepala Keluarga')
                     ->schema([
                         Grid::make(2)->schema([
-                            Forms\Components\TextInput::make('nomor_kk')
-                                ->label('Nomor Kartu Keluarga (Gereja)')
-                                ->placeholder('Contoh: KK-2025-001')
-                                ->unique(ignoreRecord: true)
-                                ->nullable(),
-
                             Forms\Components\Select::make('lingkungan_id')
                                 ->label('Lingkungan')
                                 ->relationship('lingkungan', 'name')
                                 ->required()
                                 ->searchable()
-                                ->preload(),
+                                ->preload()
+                                ->helperText('Pilih lingkungan tempat keluarga ini berdomisili'),
 
                             Forms\Components\TextInput::make('nama_kk')
                                 ->label('Nama Kepala Keluarga')
                                 ->required()
-                                ->placeholder('Contoh: Marihot Siahaan'),
+                                ->placeholder('Keluarga Marihot Siahaan')
+                                ->helperText('Gunakan format: Keluarga [Nama Kepala Keluarga]'),
 
-                            Forms\Components\TextInput::make('nama_pasangan')
-                                ->label('Nama Pasangan')
-                                ->nullable()
-                                ->placeholder('Suami / Istri (jika ada)'),
+                            Forms\Components\TextInput::make('jumlah_anggota')
+                                ->label('Jumlah Anggota Keluarga')
+                                ->numeric()
+                                ->default(1)
+                                ->minValue(1)
+                                ->helperText('Termasuk kepala keluarga'),
 
                             Forms\Components\TextInput::make('no_telp')
                                 ->label('Nomor Telepon')
-                                ->tel()
                                 ->nullable()
-                                ->placeholder('08xx-xxxx-xxxx'),
-
-                            Forms\Components\Toggle::make('is_active')
-                                ->label('Status Aktif')
-                                ->default(true)
-                                ->inline(false),
+                                ->placeholder('0812-3456-7890')
+                                ->tel(),
                         ]),
+                    ]),
 
+                Section::make('Alamat')
+                    ->schema([
                         Forms\Components\Textarea::make('alamat')
                             ->label('Alamat Lengkap')
                             ->nullable()
                             ->rows(2)
-                            ->columnSpanFull(),
-                    ]),
-
-                Section::make('Data Gerejawi')
-                    ->description('Informasi keanggotaan umat.')
-                    ->schema([
-                        Grid::make(2)->schema([
-                            Forms\Components\DatePicker::make('tanggal_bergabung')
-                                ->label('Tanggal Bergabung')
-                                ->nullable()
-                                ->displayFormat('d M Y'),
-
-                            Forms\Components\Select::make('status_umat')
-                                ->label('Status Umat')
-                                ->options([
-                                    'Aktif' => 'Aktif',
-                                    'Pindah Paroki' => 'Pindah Paroki',
-                                    'Meninggal Dunia' => 'Meninggal Dunia',
-                                    'Lainnya' => 'Lainnya',
-                                ])
-                                ->default('Aktif')
-                                ->required(),
-                        ]),
-
-                        Forms\Components\Textarea::make('keterangan')
-                            ->label('Keterangan / Catatan')
-                            ->nullable()
-                            ->rows(2)
-                            ->columnSpanFull(),
+                            ->placeholder('Jl. ..., RT/RW ..., Kel. ..., Parapat'),
                     ]),
             ]);
     }
@@ -108,57 +74,44 @@ class KepalaKeluargaResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nomor_kk')
-                    ->label('No. KK')
-                    ->searchable()
-                    ->sortable()
-                    ->placeholder('-'),
-
                 Tables\Columns\TextColumn::make('nama_kk')
-                    ->label('Kepala Keluarga')
+                    ->label('Nama Kepala Keluarga')
                     ->searchable()
                     ->sortable()
-                    ->weight(FontWeight::Bold),
+                    ->weight(FontWeight::Medium),
 
                 Tables\Columns\TextColumn::make('lingkungan.name')
                     ->label('Lingkungan')
                     ->badge()
-                    ->color('info')
-                    ->sortable(),
+                    ->color('primary')
+                    ->sortable()
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('alamat')
+                    ->label('Alamat')
+                    ->limit(40)
+                    ->placeholder('-'),
 
                 Tables\Columns\TextColumn::make('jumlah_anggota')
-                    ->label('Jml Anggota')
-                    ->numeric()
-                    ->sortable()
-                    ->alignCenter(),
+                    ->label('Anggota')
+                    ->suffix(' jiwa')
+                    ->badge()
+                    ->color('gray')
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('no_telp')
                     ->label('No. Telepon')
-                    ->searchable()
-                    ->placeholder('-'),
-
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Aktif')
-                    ->boolean()
-                    ->sortable(),
+                    ->placeholder('-')
+                    ->icon('heroicon-o-phone'),
             ])
-            ->defaultSort('nama_kk')
             ->filters([
                 Tables\Filters\SelectFilter::make('lingkungan_id')
-                    ->label('Lingkungan')
                     ->relationship('lingkungan', 'name')
-                    ->searchable()
-                    ->preload(),
-
-                Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Status Aktif')
-                    ->boolean()
-                    ->trueLabel('Aktif')
-                    ->falseLabel('Tidak Aktif'),
+                    ->label('Filter Lingkungan'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->label('Detail'),
                 Tables\Actions\EditAction::make()->label('Ubah'),
+                Tables\Actions\DeleteAction::make()->label('Hapus')->requiresConfirmation(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -166,10 +119,10 @@ class KepalaKeluargaResource extends Resource
                 ]),
             ])
             ->emptyStateIcon('heroicon-o-users')
-            ->emptyStateHeading('Belum Ada Kepala Keluarga')
-            ->emptyStateDescription('Mulai daftarkan kepala keluarga ke lingkungan paroki.')
+            ->emptyStateHeading('Belum Ada Data Kepala Keluarga')
+            ->emptyStateDescription('Tambahkan data kepala keluarga per lingkungan')
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()->label('Tambah Keluarga')->icon('heroicon-o-plus'),
+                Tables\Actions\CreateAction::make()->label('Tambah KK')->icon('heroicon-o-plus'),
             ]);
     }
 
@@ -178,7 +131,6 @@ class KepalaKeluargaResource extends Resource
         return [
             'index' => Pages\ListKepalaKeluargas::route('/'),
             'create' => Pages\CreateKepalaKeluarga::route('/create'),
-            'view' => Pages\ViewKepalaKeluarga::route('/{record}'),
             'edit' => Pages\EditKepalaKeluarga::route('/{record}/edit'),
         ];
     }

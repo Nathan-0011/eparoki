@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 40" width="200" height="40">
+    <!-- Circle -->
+    <circle cx="20" cy="20" r="16" fill="#7c3aed" />
+    
+    <!-- Cross in the middle of the circle -->
+    <path d="M20 10 v20 M14 16 h12" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+    
+    <!-- eKatolik Text -->
+    <text x="44" y="21" font-family="system-ui, -apple-system, sans-serif" font-weight="bold" font-size="16" fill="#ffffff">eKatolik</text>
+    
+    <!-- Paroki Text -->
+    <text x="44" y="34" font-family="system-ui, -apple-system, sans-serif" font-weight="normal" font-size="10" fill="#9ca3af">Santo Fidelis Parapat</text>
+</svg>

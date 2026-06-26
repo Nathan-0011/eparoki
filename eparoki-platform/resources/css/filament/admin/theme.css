@@ -1,0 +1,45 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+/* 1. Sembunyikan scrollbar */
+*, *:before, *:after {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar { display: none; }
+
+/* Pastikan konten tetap scrollable */
+html, body {
+  overflow: auto;
+}
+
+/* 2. Dashboard padding yang lebih nyaman */
+.fi-main { 
+  padding: 1.5rem !important; 
+}
+
+/* 3. Widget table — hapus search bar bawaan */
+.fi-ta-header { 
+  display: none !important; 
+}
+
+/* Kecuali di halaman resource (bukan dashboard) */
+.fi-resource-list .fi-ta-header {
+  display: flex !important;
+}
+
+/* 4. Stats card lebih compact */
+.fi-wi-stats-overview-stat {
+  padding: 1rem 1.25rem !important;
+}
+
+/* 5. Empty state lebih kecil */
+.fi-ta-empty-state-icon {
+  width: 2rem !important;
+  height: 2rem !important;
+}
+
+/* 6. Brand logo proporsional */
+.fi-sidebar-header img {
+  max-height: 40px !important;
+  width: auto !important;
+}

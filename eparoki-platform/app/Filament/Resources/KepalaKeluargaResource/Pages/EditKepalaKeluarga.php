@@ -15,8 +15,7 @@ class EditKepalaKeluarga extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\ViewAction::make()->label('Detail'),
-            Actions\DeleteAction::make()->label('Hapus'),
+            Actions\DeleteAction::make(),
         ];
     }
 

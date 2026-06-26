@@ -6,60 +6,56 @@ use App\Models\JadwalIbadah;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 
 class JadwalHariIniWidget extends BaseWidget
 {
-    protected static ?string $heading = '📅 Jadwal Ibadah Hari Ini';
-
-    // Tampil di baris kedua, sebelah kiri (setengah lebar)
-    protected static ?int $sort = 2;
-    protected int | string | array $columnSpan = 'half';
-
-    // Mapping nama hari Inggris ke Indonesia
-    private function getNamaHariIndonesia(): string
+    protected int | string | array $columnSpan = 2;
+    
+    protected function getTableHeading(): string|\Illuminate\Contracts\Support\Htmlable|null
     {
-        $map = [
-            'Sunday'    => 'Minggu',
-            'Monday'    => 'Senin',
-            'Tuesday'   => 'Selasa',
-            'Wednesday' => 'Rabu',
-            'Thursday'  => 'Kamis',
-            'Friday'    => 'Jumat',
-            'Saturday'  => 'Sabtu',
-        ];
-        return $map[now()->englishDayOfWeek] ?? now()->englishDayOfWeek;
+        Carbon::setLocale('id');
+        $date = Carbon::now()->translatedFormat('l, d F Y');
+        return "📅 Jadwal Ibadah Hari Ini ({$date})";
     }
 
     public function table(Table $table): Table
     {
-        // Ambil nama hari ini dalam Bahasa Indonesia
-        $hariIni = $this->getNamaHariIndonesia();
-
+        $today = Carbon::today()->toDateString();
+        
         return $table
             ->query(
-                JadwalIbadah::query()->where('day_of_week', $hariIni)->orderBy('time')
+                JadwalIbadah::query()
+                    ->where('tanggal', $today)
+                    ->orderBy('time', 'asc')
+                    ->limit(10)
             )
+            ->paginated(false)
             ->columns([
                 Tables\Columns\TextColumn::make('time')
-                    ->label('Waktu')
-                    ->badge()
-                    ->color('warning'),
-
-                Tables\Columns\TextColumn::make('type')
+                    ->label('Pukul')
+                    ->time('H:i')
+                    ->formatStateUsing(fn ($state) => Carbon::parse($state)->format('H:i') . ' WIB')
+                    ->weight('bold'),
+                    
+                Tables\Columns\TextColumn::make('jenis_ibadah')
                     ->label('Jenis Ibadah')
-                    ->searchable(),
-
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'Misa Mingguan' => 'primary',
+                        'Misa Harian' => 'success',
+                        'Pernikahan' => 'warning',
+                        'Pemberkatan' => 'info',
+                        default => 'gray',
+                    }),
+                    
                 Tables\Columns\TextColumn::make('celebrant')
                     ->label('Selebran')
-                    ->placeholder('–'),
-
-                Tables\Columns\TextColumn::make('location')
-                    ->label('Lokasi')
-                    ->placeholder('–'),
+                    ->default('-'),
             ])
             ->emptyStateHeading('Tidak Ada Jadwal Hari Ini')
-            ->emptyStateDescription('Belum ada jadwal ibadah yang tercatat untuk hari ' . now()->translatedFormat('l, d M Y'))
-            ->emptyStateIcon('heroicon-o-calendar')
-            ->paginated(false);
+            ->emptyStateDescription('Belum ada jadwal ibadah yang tercatat untuk hari ini.')
+            ->emptyStateIcon('heroicon-o-calendar');
     }
 }

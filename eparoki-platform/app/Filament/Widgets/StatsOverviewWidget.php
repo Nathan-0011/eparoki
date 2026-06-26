@@ -2,53 +2,51 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\IntensiMisa;
-use App\Models\JadwalIbadah;
 use App\Models\KepalaKeluarga;
 use App\Models\Lingkungan;
+use App\Models\IntensiMisa;
+use App\Models\SongNumber;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StatsOverviewWidget extends BaseWidget
 {
-    // Urutan tampil di dashboard: paling atas
-    protected static ?int $sort = 1;
+    // Supaya widget bisa auto-refresh jika data berubah (opsional)
+    protected static ?string $pollingInterval = '30s';
+
+    protected int | string | array $columnSpan = 'full';
 
     protected function getStats(): array
     {
-        // Hitung data dari database secara real-time
-        $totalKK = KepalaKeluarga::count();
-        $totalLingkungan = Lingkungan::count();
-        $intensiMingguIni = IntensiMisa::currentWeek()->count();
-
-        // Jadwal hari ini — hari disimpan dalam Bahasa Indonesia di database
-        $hariMap = [
-            'Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
-            'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu',
-        ];
-        $hariIni = $hariMap[now()->englishDayOfWeek] ?? now()->englishDayOfWeek;
-        $jadwalHariIni = JadwalIbadah::where('day_of_week', $hariIni)->count();
+        $kkCount = KepalaKeluarga::count();
+        $lingkCount = Lingkungan::count();
+        
+        $intensiMingguIni = IntensiMisa::where('is_archived', false);
+        $intensiCount = $intensiMingguIni->count();
+        $intensiTotal = $intensiMingguIni->sum('amount') ?? 0;
+        
+        $latestSong = SongNumber::latest('sent_at')->first();
 
         return [
-            Stat::make('Total Kepala Keluarga', number_format($totalKK))
-                ->description('Terdaftar di semua lingkungan')
-                ->descriptionIcon('heroicon-m-home')
-                ->color('info'),
+            Stat::make('Kepala Keluarga', $kkCount)
+                ->description("dalam {$lingkCount} lingkungan")
+                ->descriptionIcon('heroicon-o-users')
+                ->color('info'), // biru (pakai info)
 
-            Stat::make('Total Lingkungan', number_format($totalLingkungan))
-                ->description('Wilayah dalam paroki')
-                ->descriptionIcon('heroicon-m-map-pin')
-                ->color('success'),
+            Stat::make('Lingkungan', $lingkCount)
+                ->description('dalam Paroki Santo Fidelis')
+                ->descriptionIcon('heroicon-o-home')
+                ->color('success'), // hijau (pakai success)
 
-            Stat::make('Intensi Misa Aktif', number_format($intensiMingguIni))
-                ->description('Minggu ini (belum diarsipkan)')
-                ->descriptionIcon('heroicon-m-heart')
-                ->color('primary'),
+            Stat::make('Intensi Misa', $intensiCount)
+                ->description($intensiTotal > 0 ? "Total: Rp " . number_format($intensiTotal, 0, ',', '.') : 'Belum ada intensi')
+                ->descriptionIcon('heroicon-o-heart')
+                ->color('primary'), // ungu/primary (pakai primary)
 
-            Stat::make('Jadwal Ibadah Hari Ini', number_format($jadwalHariIni))
-                ->description('Kebaktian ' . now()->translatedFormat('l, d M Y'))
-                ->descriptionIcon('heroicon-m-calendar-days')
-                ->color('warning'),
+            Stat::make('Nomor Lagu Terakhir', $latestSong?->song_number ?? '-')
+                ->description($latestSong ? "Dikirim " . $latestSong->sent_at?->diffForHumans() : 'Belum ada pengiriman')
+                ->descriptionIcon('heroicon-o-musical-note')
+                ->color('warning'), // oranye (pakai warning)
         ];
     }
 }
